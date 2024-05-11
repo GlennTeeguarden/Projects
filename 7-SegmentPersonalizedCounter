@@ -1,0 +1,521 @@
+// Digit segment initialization
+int ones = 2;
+int tens = 3;
+int hundreds = 4;
+int thousands = 5;
+
+// Keep track of digit counts
+int count = 0;
+int countOnes = 0;
+int countTens = 0;
+int countHundreds = 0;
+int countThousands = 0;
+
+bool countToggle = false;
+  
+// Seven segment port mapping
+int a = 6;
+int b = 7;
+int c = 8;
+int d = 9;
+int e = 10;
+int f = 11;
+int g = 12;
+
+const int pinBuzz = A0;   // Buzzer Pin
+const int pinSwitch = A1; // Push-button pin
+
+// Setup and initialize all necessary things
+void setup() {
+
+  Serial.begin(9600);       // Opens serial communication
+  pinMode(pinBuzz,OUTPUT);  // Defines pinBuzz as an Output
+  pinMode(pinSwitch,INPUT); // Defines pinSwitch as an input
+
+  pinMode(thousands, OUTPUT);
+  pinMode(hundreds, OUTPUT);
+  pinMode(tens, OUTPUT);
+  pinMode(ones, OUTPUT);
+
+  pinMode(a, OUTPUT);
+  pinMode(b, OUTPUT);
+  pinMode(c, OUTPUT);
+  pinMode(d, OUTPUT);
+  pinMode(e, OUTPUT);
+  pinMode(f, OUTPUT);
+  pinMode(g, OUTPUT);
+
+}
+
+// Code runs here
+void loop() {
+
+  countThousands = count / 1000;
+  countHundreds = (count % 1000) / 100;
+  countTens = (count % 100) / 10;
+  countOnes = count % 10;
+
+  int buttonState;                      // To save the last logic state of the button
+  buttonState = digitalRead(pinSwitch); // Put the reading value of the switch on buttonState
+  Serial.println(buttonState);          // Shows the logic state of the input on Serial Monitor
+
+  if (buttonState == 1) { // Pressed button, logic State HIGH (5V)
+
+    digitalWrite(pinBuzz, 1); // Switch pressed, buzzer sounds off
+    countToggle = !countToggle;
+    delay(5);
+
+  }
+
+  else {
+
+    digitalWrite(pinBuzz,0); // If the switch isn’t pressed, buzzer off
+
+  }
+
+  delay(1); // Reading delay
+
+  for (int i = 0; i < 500; i++) {
+    switch (countThousands) {
+      case 0:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, LOW);
+      break;
+
+      case 1:
+      digitalWrite(a, LOW);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, LOW);
+      break;
+
+      case 2:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, LOW);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, LOW);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 3:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 4:
+      digitalWrite(a, LOW);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 5:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, LOW);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 6:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, LOW);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 7:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, LOW);
+      break;
+
+      case 8:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 9:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+    }
+
+    digitalWrite(thousands, LOW);
+    delay(0.01);
+    digitalWrite(thousands, HIGH);
+
+    switch (countHundreds) {
+      case 0:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, LOW);
+      break;
+
+      case 1:
+      digitalWrite(a, LOW);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, LOW);
+      break;
+
+      case 2:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, LOW);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, LOW);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 3:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 4:
+      digitalWrite(a, LOW);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 5:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, LOW);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 6:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, LOW);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 7:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, LOW);
+      break;
+
+      case 8:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 9:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+    }
+
+    digitalWrite(hundreds, LOW);
+    delay(0.01);
+    digitalWrite(hundreds, HIGH);
+
+    switch (countTens) {
+      case 0:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, LOW);
+      break;
+
+      case 1:
+      digitalWrite(a, LOW);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, LOW);
+      break;
+
+      case 2:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, LOW);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, LOW);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 3:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 4:
+      digitalWrite(a, LOW);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 5:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, LOW);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 6:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, LOW);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 7:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, LOW);
+      break;
+
+      case 8:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 9:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+    }
+
+    digitalWrite(tens, LOW);
+    delay(0.01);
+    digitalWrite(tens, HIGH);
+
+    switch (countOnes) {
+      case 0:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, LOW);
+      break;
+
+      case 1:
+      digitalWrite(a, LOW);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, LOW);
+      break;
+
+      case 2:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, LOW);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, LOW);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 3:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 4:
+      digitalWrite(a, LOW);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 5:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, LOW);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 6:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, LOW);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 7:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, LOW);
+      digitalWrite(e, LOW);
+      digitalWrite(f, LOW);
+      digitalWrite(g, LOW);
+      break;
+
+      case 8:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, HIGH);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+      case 9:
+      digitalWrite(a, HIGH);
+      digitalWrite(b, HIGH);
+      digitalWrite(c, HIGH);
+      digitalWrite(d, HIGH);
+      digitalWrite(e, LOW);
+      digitalWrite(f, HIGH);
+      digitalWrite(g, HIGH);
+      break;
+
+    }
+
+    digitalWrite(ones, LOW);
+    delay(0.01);
+    digitalWrite(ones, HIGH);
+
+  }
+
+  if (count >= 9999) { // MAX LIMIT
+
+    count = 0;
+
+  }
+
+  else if (countToggle == false) {
+
+    count++;
+
+  }
+
+}
