@@ -1,0 +1,458 @@
+#include "vex.h"
+
+using object = vex::vision::object;
+using namespace vex;
+
+Brain.Screen.print("Auton 1 Selected");
+start_timer(44.5);
+
+int choice;
+
+// Spins roller and shoots two preloads 
+rollerSpin();
+intakeSpin();
+shootDisc(9); 
+LateralPIDSpeed(-3, 100);
+wait(0.4, sec);
+Drive.stop();
+rollerStop(); 
+wait(0.5, sec);
+LateralPIDSpeed(5, 50);
+TurnPID(-6);
+wait(0.9, sec);
+bumpDisc();
+wait(0.4, sec);
+bumpDisc();
+shootDiscStop();
+
+// Hypothetical tower of three pickup with piece in front of intake and shorter ramp, proceeds to shoot all three 
+TurnPID(-123);
+LateralPIDSpeed(-29, 100);
+LateralPIDSpeed(5, 75);
+wait(0.25, sec);
+
+while (true) {
+
+  int timeThresh = Brain.timer(msec);
+
+  if (timeThresh < 1500) {
+
+    choice = testTrackDisc();
+    Brain.Screen.newLine();
+    Brain.Screen.print("Function Finished");
+
+    if (choice == 1) {
+
+      break;
+
+    }
+
+  }
+
+  if (timeThresh > 1500) {
+
+    break;
+
+  }
+
+}
+
+LateralPIDSpeed(-6, 40);
+wait(.25, sec);
+LateralPIDSpeed(4, 40);
+
+while (true) {
+
+  int timeThresh = Brain.timer(msec);
+
+  if (timeThresh < 1500) {
+
+    choice = testTrackDisc();
+    Brain.Screen.newLine();
+    Brain.Screen.print("Function Finished");
+
+    if (choice == 1) {
+
+      break;
+
+    }
+
+  }
+
+  if (timeThresh > 1500) {
+
+    break;
+
+  }
+
+}
+
+LateralPIDSpeed(-6, 60);
+wait(.25, sec);
+shootDisc(8.5); 
+LateralPIDDrift(35);
+TurnPID(127);
+//readjustGoal(); // RED READING
+wait(1, sec);
+bumpDisc();
+wait(.6, sec);
+bumpDisc();
+wait(.6, sec);
+bumpDisc();
+wait(.6, sec);
+
+// Backs up to row of three along bumper
+LateralPID(-5, 30);
+TurnPID(-88);
+LateralPIDSpeed(-45, 70);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+// Tasks to do after timer finishes
+  
+set_master_auton_enable();
+set_perma_lock();
+leftDrive.stop(coast);
+rightDrive.stop(coast);
+intakeStop();
+shootDiscStop(); 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// FUNCTIONS
+
+void start_timer(double sec) {
+
+  master_auton_seconds = sec;
+  task countdown(master_auton_timer);
+
+}
+
+void rollerSpin() {
+
+  if (master_auton_enable) {
+
+    RollerSpinner.spin(fwd, rollerSpeed, pct);
+
+  }
+
+}
+
+void intakeSpin() {
+
+  if (master_auton_enable) {
+
+    Intake.spin(forward, 12, volt);
+
+  }
+
+}
+
+void shootDisc(double shooterSpeed) {
+
+  if (master_auton_enable) {
+
+    flywheel.spin(forward, shooterSpeed, volt);
+
+  }
+
+}
+
+void LateralPIDSpeed(double travelInches, int speed) { // Use motor rotations and encoders to move a specified distance
+
+  if (master_auton_enable) {
+
+    kp = 4;
+    ki = 0.00;
+    kd = 0.00;
+    int prevms = Brain.timer(msec);
+    int currenttime;
+
+    double dist = 0; // Variable that will be current distance
+    double lateralMotorSpeed;
+    double avgMotorRotation;
+    leftDrive.resetRotation();
+    rightDrive.resetRotation();
+
+    if (travelInches >= 0) {
+
+      while (dist <= travelInches) { // Poportional control feedback loop for error
+
+        lateralMotorSpeed = (travelInches - dist)*(127/100)*kp;
+        
+        leftDrive.spin(forward, speed, pct);
+        rightDrive.spin(forward, speed, pct);
+
+        vex::task::sleep(10);
+        
+        avgMotorRotation = ((leftDrive.rotation(rev) + rightDrive.rotation(rev))/2);
+        dist = avgMotorRotation*3.14*wheelDiameter; // pi * diameter // Distance = total rotations * circumference of 1 rotation
+
+        if (fabs(travelInches - dist) <= (fabs(0.5))) {  
+
+          break; 
+
+        }
+
+        currenttime = Brain.timer(msec);
+
+        // Force bailout
+        if ((currenttime - prevms) > 5000) {
+
+          break;
+
+        }
+
+      }
+
+    }
+  
+    else if (travelInches < 0) {
+
+      while (dist >= travelInches) { // Poportional control feedback loop for error
+
+        lateralMotorSpeed = (-travelInches + dist)*(127/100)*kp;
+
+        leftDrive.spin(reverse, speed, pct);
+        rightDrive.spin(reverse, speed, pct);
+
+        vex::task::sleep(10);
+
+        dist = leftDrive.rotation(rev)*3.14*wheelDiameter; // pi * diameter // Distance = total rotations * circumference of 1 rotation
+
+        if (fabs(travelInches - dist) <= (fabs(0.5))) {  
+
+          break; 
+
+        }
+
+        currenttime = Brain.timer(msec);
+
+        // Force bailout
+        if ((currenttime - prevms) > 5000) {
+
+          break;
+
+        }
+
+      }
+
+    }
+
+    leftDrive.stop(coast);   // Stops motors once target is reached and loop finishes
+    rightDrive.stop(coast);  // Optional braking, will make motion more fluid
+
+  }
+
+  vex::task::sleep(50);
+
+}
+
+void rollerStop() {
+
+  if (master_auton_enable) {
+
+    RollerSpinner.stop();
+
+  }
+
+}
+
+// Gains are predetermined
+void TurnPID(double degrees) {
+
+  if (master_auton_enable) {
+
+    int prevms = Brain.timer(msec);
+    bool esc = false;
+    kp = 0.60;  // 0.50
+    ki = 0.00;  // 0.00
+    kd = 0.005; // 0.065
+  
+    bias = 7;
+    prevError = 0;
+    prevIntegral = 0;
+    iterationTime = 10; // ms
+
+    InertialSensor.resetRotation();
+    double degreesTurned = InertialSensor.rotation();
+    error = degrees; // -------- initial error
+
+    while (fabs(error) > 1.5 && master_auton_enable && !(esc)) {
+
+      degreesTurned = InertialSensor.rotation();         
+
+      error = degrees - degreesTurned;                    // -------- proportion
+      integralError = prevIntegral + error*iterationTime; // -------- integral
+      derivative = error - prevError;                     // -------- derivative
+
+      float pidMoveMotor = error*kp + totalError*ki + derivative*kd + (bias/100)*127; // Speed for the motors
+
+      if (degrees < 0) { 
+
+        pidMoveMotor = error*kp + totalError*ki + derivative*kd + -1*bias;
+
+      }
+
+      else {
+
+        pidMoveMotor = error*kp + totalError*ki + derivative*kd + bias;
+
+      }
+
+      float pidMovePCT = (pidMoveMotor/127*100);
+
+      leftDrive.spin(fwd,pidMovePCT, pct);
+      rightDrive.spin(reverse,pidMovePCT, pct);
+       
+      prevError = error;
+      prevIntegral = integralError;
+      vex::task::sleep(iterationTime);
+
+      int currenttime = Brain.timer(msec);
+
+      // Force bailout
+      if ((currenttime - prevms) > 5000) {
+
+        esc = true;
+
+      }
+
+    }
+
+    
+    leftDrive.stop(hold); 
+    rightDrive.stop(hold);
+
+    task::sleep(50);
+
+  }
+
+}
+
+void bumpDisc() {
+ 
+  if (master_auton_enable) {
+
+    DiskPusher.spin(fwd, 50, pct);
+    wait(0.60, seconds);
+    DiskPusher.spin(reverse, 50, pct);
+    wait(0.65, seconds);
+    DiskPusher.stop();
+
+  }
+
+}
+
+void shootDiscStop() { 
+
+  if (master_auton_enable) {
+
+    flywheel.stop(coast); 
+
+  }
+
+}
+
+void LateralPIDDrift (double inches) {
+
+  if (master_auton_enable) {
+
+    int prevms = Brain.timer(msec);
+    bool esc = false;
+
+    kp = .178;
+    ki = 0;
+    kd = 0.025;
+    double turn_kp = .5;
+    double turn_ki = 0;
+    double turn_kd = 0.065;
+    bias = 7;
+    prevError = 0;
+    prevIntegral = 0;
+    iterationTime = 20; // ms
+    double turn_prevError = 0;
+    double turn_prevIntegral = 0;
+    double turn_iterationTime = 10; // ms
+    double turn_integralError = 0;
+    double turn_derivative = 0;
+    double turn_totalError = 0;
+
+    rightDrive.resetRotation();
+    leftDrive.resetRotation();
+    InertialSensor.resetRotation();
+
+    double degreesTurned = InertialSensor.rotation();
+    double turn_error = 0; // Initial error
+  
+    float degrees = (inches/inchesPerDegree)*driveRatio;
+    double avgDist = (rightDrive.rotation(deg) + leftDrive.rotation(deg))/2;
+
+    error = degrees - avgDist; // Initial error
+
+    while (fabs(error) > 4 && master_auton_enable && !(esc)) {
+
+      avgDist = (rightDrive.rotation(deg) + leftDrive.rotation(deg))/2;          
+      degreesTurned = InertialSensor.rotation();
+
+      error = degrees - avgDist; // Proportion
+      integralError = prevIntegral + error*iterationTime; // Integral
+      derivative = error - prevError; // Derivative
+
+      turn_error = 0 - degreesTurned; // Proportion
+      turn_integralError = turn_prevIntegral + turn_error*turn_iterationTime; // Integral
+      turn_derivative = turn_error - turn_prevError; // Derivative
+    
+
+      float pidMoveMotor = error*kp + totalError*ki + derivative*kd + turn_error*turn_kp + turn_totalError*turn_ki + turn_derivative*turn_kd + bias;
+      float pidTurnMotor = turn_error*turn_kp + turn_totalError*turn_ki + turn_derivative*turn_kd;
+
+      if (degrees < 0) {    
+
+        pidMoveMotor = error*kp + totalError*ki + derivative*kd + -1*bias;
+        pidTurnMotor = turn_error*turn_kp + turn_totalError*turn_ki + turn_derivative*turn_kd;
+
+      }
+
+      else {
+
+        pidMoveMotor = error*kp + totalError*ki + derivative*kd + turn_error*turn_kp + turn_totalError*turn_ki + turn_derivative*turn_kd + bias;
+        pidTurnMotor = turn_error*turn_kp + turn_totalError*turn_ki + turn_derivative*turn_kd;
+
+      }
+
+      float pidMovePCT = (pidMoveMotor/127*100);
+      float pidTurnPCT = (pidTurnMotor/127*100);
+      
+      leftDrive.spin(fwd,pidMovePCT + pidTurnPCT, pct);
+      rightDrive.spin(fwd,pidMovePCT - pidTurnPCT, pct);
+
+      prevError = error;
+      prevIntegral = integralError;
+
+      turn_prevError = turn_error;
+      turn_prevIntegral = turn_integralError;
+      vex::task::sleep(iterationTime);
+
+      int currenttime = Brain.timer(msec);
+
+      if ((currenttime - prevms) > 3750) {
+        esc = true;
+      }
+
+    }
+
+    leftDrive.stop(hold); 
+    rightDrive.stop(hold); 
+
+  }
+
+  return;
+
+}
+
+
+
+
+
+
